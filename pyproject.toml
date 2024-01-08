@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 # https://peps.python.org/pep-0621/#readme
 requires-python = ">=3.9"
 dynamic = ["version"]
-name = "python-vagrant"
+name = "vagpy"
 description = "Python bindings for interacting with Vagrant virtual machines."
 readme = "README.md"
 authors = [{ "name" = "Todd Francis DeLuca", "email" = "todddeluca@yahoo.com" }]
