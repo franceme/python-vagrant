@@ -232,6 +232,7 @@ class Vagrant:
         env=None,
         out_cm=None,
         err_cm=None,
+        prefix_sudo=False
     ) -> None:
         """
         root: a directory containing a file named Vagrantfile.  Defaults to
@@ -258,11 +259,15 @@ class Vagrant:
         quiet_stderr: Ignored if out_cm is not None.  If True, the stderr of
           vagrant commands whose output is not captured for further processing
           will be sent to devnull.
+        prefix_sudo: Fixing the annoying issue where Vagrant requires root 
+          capability but you cannot alter the command being run through
+          the library.
         """
         self.root = os.path.abspath(root) if root is not None else os.getcwd()
         self._cached_conf: Dict[str, Optional[Dict[str, str]]] = {}
         self._vagrant_exe: Optional[str] = None  # cache vagrant executable path
         self.env = env
+        self.prefix_sudo = prefix_sudo
         if out_cm is not None:
             self.out_cm = out_cm
         elif quiet_stdout:
@@ -1073,10 +1078,14 @@ class Vagrant:
         if not self._vagrant_exe:
             raise RuntimeError(VAGRANT_NOT_FOUND_WARNING)
 
+        cmd_prefix = [self._vagrant_exe]
+        if self.prefix_sudo:
+            cmd_prefix = ["sudo", self._vagrant_exe]
+
         # filter out None args.  Since vm_name is None in non-Multi-VM
         # environments, this quietly removes it from the arguments list
         # when it is not specified.
-        return [self._vagrant_exe] + [arg for arg in args if arg is not None]
+        return cmd_prefix + [arg for arg in args if arg is not None]
 
     def _call_vagrant_command(self, args) -> None:
         """
